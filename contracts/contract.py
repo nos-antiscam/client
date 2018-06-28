@@ -1,16 +1,3 @@
-"""
-Large Array Storage Test
-A simple utilise contract that allows you to manipulate a stored list for stress tests and GAS cost evaluation.
-Test Command:
-    build [FILE_PATH] test 0710 05 True False init
-Example Executions:
-    testinvoke [CONTRACT_HASH] init
-    testinvoke [CONTRACT_HASH] delete
-    testinvoke [CONTRACT_HASH] fetch
-    testinvoke [CONTRACT_HASH] count
-    testinvoke [CONTRACT_HASH] append_1
-    testinvoke [CONTRACT_HASH] append_10
-"""
 from boa.interop.Neo.Storage import Get, Put, Delete, GetContext
 from boa.interop.Neo.Runtime import Log, Notify
 from boa.builtins import concat, list, range, take, substr

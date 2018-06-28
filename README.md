@@ -57,5 +57,6 @@ You will get an alert with confirmation
 * Check whether the input is a valid address
 * Implement more assets
 * Show comments from all
+* Implement Check Witness on contract
 
 Feedbacks are welcome.
