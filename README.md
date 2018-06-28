@@ -53,7 +53,7 @@ and it is secure to send asset to that address.
 Once you decide to send asset(GAS for now), input the amount and press the submit button.
 You will get an alert with confirmation
 
-Todo:
+## Todo
 * Check whether the input is a valid address
 * Implement more assets
 * Show comments from all
