@@ -58,5 +58,7 @@ You will get an alert with confirmation
 * Implement more assets
 * Show comments from all
 * Implement Check Witness on contract
+* Implement route to list all addresses favorited by you
+* Implement dropdown to select an address from favorites to send asset
 
 Feedbacks are welcome.
