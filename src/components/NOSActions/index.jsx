@@ -28,6 +28,11 @@ const styles = {
 
     return comma_separated.split(',')
   }
+  function isInt(value) {
+    return !isNaN(value) &&
+         parseInt(Number(value)) == value &&
+         !isNaN(parseInt(value, 10));
+  }
   function hex2a(hexx) {
     var hex = hexx.toString();//force conversion
     var str = '';
@@ -50,7 +55,8 @@ const styles = {
                  ret_val.push(par_val)
            }
            else if(type == 'ByteArray'){
-               ret_val.push(hex2a(cur.value))
+               if(isInt(cur.value))ret_val.push(parseInt(cur.value))
+               else ret_val.push(hex2a(cur.value))
            }
            else ret_val.push(cur.value.toString());
        }
@@ -61,10 +67,14 @@ class NOSActions extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = {address: 'AZ81H31DMWzbSnFDLFkzh9vHwaDLayV7fU'}
+    this.state = {address: '', value: '', comments:[]}
     this.neo = "c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b";
     this.gas = "602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7";
     this.scriptHash = "60b6a06da01ee8ffd7b8b874fc55e29cd930f26e";
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleSend = this.handleSend.bind(this);
+    this.handleSendAddress = this.handleSendAddress.bind(this)
   }
   handleAlert = async func => { var value = await func;
           //console.log(convertUnicode(JSON.stringify(value.substring(4))));
@@ -90,8 +100,6 @@ class NOSActions extends React.Component {
   }
   async componentDidMount() {
     this.set_address()
-    this.set_asset('neo', this.neo)
-    this.set_asset('gas', this.gas)
   }
 
   async set_address() {
@@ -100,25 +108,12 @@ class NOSActions extends React.Component {
     const addr = await res
     console.log(addr)
     await this.setStateAsync({owner: addr})
-    this.check_bookmark()
-    this.check_flag()
-    this.get_comments()
+    //this.check_bookmark()
+    //this.check_flag()
 
   }
 
-  async get_comments(){
-    const { classes, nos } = this.props;
-    const operation = "get_comments";
-    const check_fav = `*${this.state.address}`
-    const owner = "*" + this.state.owner
-    const invoke = { operation}; // and testInvoke
-    invoke['scriptHash'] = this.scriptHash
-    invoke['args'] = [owner, check_fav]
-    const res = await nos.testInvoke(invoke)
-    alert(JSON.stringify(deserialize_array(res.stack[0].value)))
-  }
-
-  async check_flag(){
+  check_flag(address){
     const { classes, nos } = this.props;
     const operation = "check_flag";
     const check_fav = `*${this.state.address}`
@@ -126,13 +121,15 @@ class NOSActions extends React.Component {
     const invoke = { operation}; // and testInvoke
     invoke['scriptHash'] = this.scriptHash
     invoke['args'] = [owner, check_fav]
-    const res = await nos.testInvoke(invoke)
-    //alert(JSON.stringify(res))
-    const is_flagged = res.stack[0].value[1].value == '1'
-    const flag_count = parseInt(res.stack[0].value[0].value)
-    console.log(is_flagged)
-    await this.setStateAsync({is_flagged: is_flagged, flag_count: flag_count})
-
+    const res = nos.testInvoke(invoke)
+    res.then((result) => {
+      const is_flagged = result.stack[0].value[1].value == '1'
+      const flag_count_str = result.stack[0].value[0].value
+      const flag_count =  flag_count_str ? parseInt(flag_count_str) : 0
+      console.log(is_flagged)
+      this.setState({is_flagged: is_flagged, flag_count: flag_count})
+    })
+    .catch((err) => alert(`Error checking favorite: ${err.message}`));
   }
 
   async set_asset(name, hash) {
@@ -145,7 +142,7 @@ class NOSActions extends React.Component {
     await this.setStateAsync(dict)
   }
 
-  async check_bookmark() {
+  check_bookmark() {
     const { classes, nos } = this.props;
     const operation = "check";
     const check_fav = `*${this.state.address}`
@@ -153,13 +150,17 @@ class NOSActions extends React.Component {
     const invoke = { operation}; // and testInvoke
     invoke['scriptHash'] = this.scriptHash
     invoke['args'] = [owner, check_fav]
-    const res = await nos.testInvoke(invoke)
-    // alert(JSON.stringify(res))
-    const is_favorite = res.stack[0].value == '1'
-    console.log(is_favorite)
-    await this.setStateAsync({is_favorite: is_favorite})
+    const res = nos.testInvoke(invoke)
+
+    res.then((result) => {
+      //alert(JSON.stringify(result))
+      const is_favorite = result.stack[0].value == '1'
+      console.log(is_favorite)
+      this.setState({is_favorite: is_favorite})
+    })
+    .catch((err) => alert(`Error checking favorite: ${err.message}`));
   }
-  async remove_bookmark(){
+  remove_bookmark(){
     const { classes, nos } = this.props;
     const operation = "remove";
     const check_fav = `*${this.state.address}`
@@ -167,12 +168,15 @@ class NOSActions extends React.Component {
     const invoke = { operation}; // and testInvoke
     invoke['scriptHash'] = this.scriptHash
     invoke['args'] = [owner, check_fav]
-    const res = await nos.invoke(invoke)
+    const res = nos.invoke(invoke)
     // alert(JSON.stringify(res))
-    console.log(res)
-    await this.setStateAsync({is_favorite: false})
+    res.then((txid) => {
+      this.setState({is_favorite: false})
+      alert(`Removed from favorite in transaction ${txid}, wait for next block to check`)
+    })
+    .catch((err) => alert(`Error adding to favorite: ${err.message}`));
   }
-  async remove_flag(){
+  remove_flag(){
     const { classes, nos } = this.props;
     const operation = "unflag";
     const check_fav = `*${this.state.address}`
@@ -180,12 +184,14 @@ class NOSActions extends React.Component {
     const invoke = { operation}; // and testInvoke
     invoke['scriptHash'] = this.scriptHash
     invoke['args'] = [owner, check_fav]
-    const res = await nos.invoke(invoke)
-    // alert(JSON.stringify(res))
-    console.log(res)
-    await this.setStateAsync({flagged: false})
+    const res = nos.invoke(invoke)
+    res.then((txid) => {
+      this.setState({is_flagged: false, flag_count: this.state.flag_count - 1})
+      alert(`Removed from favorite in transaction ${txid}, wait for next block to check`)
+    })
+    .catch((err) => alert(`Error adding to favorite: ${err.message}`));
   }
-  async add_bookmark(){
+  add_bookmark(){
     const { classes, nos } = this.props;
     const operation = "add";
     const check_fav = `*${this.state.address}`
@@ -193,13 +199,15 @@ class NOSActions extends React.Component {
     const invoke = { operation}; // and testInvoke
     invoke['scriptHash'] = this.scriptHash
     invoke['args'] = [owner, check_fav]
-    const res = await nos.invoke(invoke)
-    // alert(JSON.stringify(res))
-    console.log(res)
-    await this.setStateAsync({is_favorite: true})
+    const res = nos.invoke(invoke)
+    res.then((txid) => {
+      this.setState({is_favorite: true})
+      alert(`Added to favorite in transaction ${txid}, wait for next block to check`)
+    })
+    .catch((err) => alert(`Error adding to favorite: ${err.message}`));
   }
 
-  async add_flag(){
+  add_flag(){
     const { classes, nos } = this.props;
     const operation = "flag";
     const check_fav = `*${this.state.address}`
@@ -207,60 +215,114 @@ class NOSActions extends React.Component {
     const invoke = { operation}; // and testInvoke
     invoke['scriptHash'] = this.scriptHash
     invoke['args'] = [owner, check_fav]
-    const res = await nos.invoke(invoke)
+    const res = nos.invoke(invoke)
+    res.then((txid) => {
+      this.setState({is_flagged: true, flag_count: this.state.flag_count + 1})
+      alert(`Address flagged in transaction ${txid}, wait for next block to check`)
+    })
+    .catch((err) => alert(`Error adding to favorite: ${err.message}, try again after some time`));
+  }
+
+  add_comment(comment){
+    const { classes, nos } = this.props;
+    const operation = "add_comment";
+    const check_fav = `*${this.state.address}`
+    const owner = "*" + this.state.owner
+    const invoke = { operation}; // and testInvoke
+    invoke['scriptHash'] = this.scriptHash
+    invoke['args'] = [owner, check_fav, comment]
+    const res = nos.invoke(invoke)
     // alert(JSON.stringify(res))
-    console.log(res)
-    await this.setStateAsync({is_flagged: true})
+    res.then((txid) => alert(`comment added in transaction ${txid}`))
+    .catch((err) => alert(`Error adding comment: ${err.message}`));
+  }
+
+  get_comments(){
+    const { classes, nos } = this.props;
+    const operation = "get_comments";
+    const check_fav = `*${this.state.address}`
+    const owner = "*" + this.state.owner
+    const invoke = { operation}; // and testInvoke
+    invoke['scriptHash'] = this.scriptHash
+    invoke['args'] = [owner, check_fav]
+    const res = nos.testInvoke(invoke)
+
+    //console.log(JSON.stringify(des_res))
+    //
+    //console.log(size)
+    res.then((result) => {
+        const des_res = deserialize_array(result.stack[0].value)
+        console.log(JSON.stringify(des_res))
+        const size = des_res[1]
+        const comments = des_res.slice(2, 2+size)
+        this.setState({comments: comments})
+    })
+    .catch((err) => alert(`Error getting comments: ${err.message}`));
+
+  }
+
+
+
+
+  handleChange(evt) {
+    this.setState({ [evt.target.name]: evt.target.value });
+  }
+
+  handleSubmit(event) {
+    event.preventDefault();
+    console.log(this.state.comment)
+    this.add_comment(this.state.comment)
+  }
+
+  handleSend(event){
+    const { classes, nos } = this.props;
+    event.preventDefault();
+    const amount = this.state.amount.toString();
+    const receiver = this.state.address;
+    nos.send({ asset: this.gas, amount, receiver })
+    .then((txid) => alert(`${amount} GAS sent in transaction ${txid}`))
+    .catch((err) => alert(`Error: ${err.message}`));
+  }
+
+  handleSendAddress(event){
+    this.state.address = event.target.value
+    this.set_asset('neo', this.neo)
+    this.set_asset('gas', this.gas)
+    this.check_bookmark()
+    this.check_flag()
+    this.get_comments()
   }
 
 
   render() {
     const { classes, nos } = this.props;
-    const rpx = "220fbdac9761352dba8d97c4874224ddb68b13d9";
-    const operation = "add"
-    // Add your smart contract's scriptHash here
-
-    // The operation of your smart contract you want to (test)invoke
-
-
-    // The necessary arguments for you (test)invoke
-    // const addr = this.address
-    // const args = [addr];
-
-    // The storagekey you want to query
-    const key = "*AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y.target";
-
-    // The amount and recipient of your send function
-    const recipient = "";
-    const amount = "";
-    const scriptHash = this.scriptHash;
-    const invoke = { scriptHash, operation }; // and testInvoke
-    const getStorage = { scriptHash, key, decodeOutput: true };
-    const send = { amount, asset: this.gas, recipient };
+    var shown = {
+      display: this.state.address ? "block" : "none"
+    };
     return (
       <React.Fragment>
         <div>
+          <form onSubmit={this.handleSend}>
+            <label>
+              Send GAS To:
+              <input type="text" name="sendto" onBlur={this.handleSendAddress} />
+            </label>
+            <label>
+              Amount:
+              <input type="text" name="amount" onChange={this.handleChange}/>
+            </label>
+            <input type="submit" value="Submit" />
+          </form>
+        </div>
+        <div style={shown}>
+        <div>
           <h3>Address: <span>{this.state.address}</span></h3>
         </div>
-        {/*<button className={classes.button} onClick={() =>{ this.handleGetAddress(nos.getAddress());}}>
-           Get Address
-         </button>
-        <button
-          className={classes.button}
-          onClick={() => this.handleAlert(nos.getBalance({ asset: neo }))}
-        >
-        </button>*/}
         <div>
           <h3>NEO Balance:
           <span>
           {this.state.neo}</span></h3>
         </div>
-        {/*<button
-          className={classes.button}
-          onClick={() => this.handleAlert(nos.getBalance({ asset: this.gas }))}
-        >
-          {this.state.gas}
-        </button>*/}
         <div>
           <h3>GAS Balance:
           <span>
@@ -277,20 +339,6 @@ class NOSActions extends React.Component {
         </strong>
         </div>
         <div>
-        {/*<button
-          className={classes.button}
-          onClick={() => this.handleAlert(nos.getBalance({ asset: rpx }))}
-        >
-          Get RPX Balance
-        </button>
-
-        <button className={classes.button} onClick={this.handleClaimGas}>
-          Claim Gas
-        </button>
-        <button className={classes.button} onClick={() => this.handleAlert(nos.send(send))}>
-          Send GAS to...
-        </button>*/}
-
         <button className={classes.button} onClick={() => {
                    this.check_bookmark()
                 }
@@ -315,14 +363,6 @@ class NOSActions extends React.Component {
           >
             Add Favorite
           </button>
-        {/*<button
-          className={classes.button}
-          onClick={() => {
-            var storage = nos.getStorage(getStorage);
-            this.handleAlert(storage)}}
-        >
-          GetStorage
-        </button>*/}
         </div>
         <div>
         <strong>
@@ -370,6 +410,24 @@ class NOSActions extends React.Component {
           >
             Flag this Address
           </button>
+        </div>
+        <div>
+          <form onSubmit={this.handleSubmit}>
+            <label>
+              Add Comment:
+              <input type="text" name="comment" onChange={this.handleChange}/>
+            </label>
+            <input type="submit" value="Submit" />
+          </form>
+        </div>
+        <div>
+           <h3>Comments</h3>
+           <ul>
+                {this.state.comments.map(function(name, index){
+                    return <li key={ index }>{name}</li>;
+                  })}
+            </ul>
+        </div>
         </div>
       </React.Fragment>
     );
