@@ -1,88 +1,61 @@
-<p align="center">
-  <img src="./logo.png" width="150px" /> 
-</p>
-
-<h1 align="center">dapp-starter-kit</h1>
+<h1 align="center">Anti-Scam Realtime Alert System</h1>
 
 <p align="center">
-  This is a starter-kit for creating a <strong>dApp</strong> on the <strong>nOS</strong> platform
+  This is a dapp built on <strong>NOS platform</strong> for alerting users before they send any asset to a flagged address
 </p>
 
-<p align="center">
-  <a href="https://github.com/nos/dapp-starter-kit/releases">
-    <img src="https://img.shields.io/github/tag/nos/dapp-starter-kit.svg?style=flat">
-  </a>
-  <a href='https://github.com/prettier/prettier'>
-    <img src='https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat'>
-  </a>
-</p>
+## Prerequisites
+* Copy contract from `./contracts/contract.py` to `<nos-local>/contracts` folder
+* Run nos-local shell
+* Build the contract in shell
+```
+open wallet ./neo-privnet.wallet
+build /smart-contracts/contract.py
+import contract /smart-contracts/contract.avm 0710 05 True False
+```
+* Retrieve the script hash - check the hash should be the same as in `./src/components/NOSActions/index.jsx`
 
 ## Getting started
-To get started, go to our [Getting Started](./docs/gettingStarted.md) guide. Afterwards you can check out the nOS [API documentation](https://github.com/nos/client/blob/master/docs/api.md)
+Now that your script is built, run the dapp
+* Run nos-client
+* Build the dapp - `yarn start`
+* Navigate to localhost:1234 to run the dapp
+
 
 ## Purpose
-The goal of this project is to provide a quickstart for creating nOS dApps with React and various dependencies already installed and configured.
+The purpose of this dapp is to alert the user before he sends an asset to a flagged address
 
-In this repo you can find NEO specific tooling:
-* nOS functions exposed in a store
-* neon-js, providing extra NEO functionality
+## Dapp-UI Description
+There is a form to start with - input address to send asset(for now GAS is implemented)
+Once the address is input and the focus is moved out of the address box,
+following data is displayed related to the address:
 
-Also general frameworks and tooling:
-* React, our framework of choice
-* JSS, CSS in JSS
-* Jest, a testing framework
-* Babel and Parcel, transpiling and compiling
-* Prettier and ESLint, kickass linting support
+* Whether the address is favorited by you(the owner address)
+* Whether the address is flagged by you(the owner address)
+* Number of times the address is flagged(overall)
+* Comments added by you(if any) - this will change to comments by anyone
 
-Some plugins:
-* vendor prefixing, camelCase and global styling JSS plugins
-* env and React Babel presets
-* babel-polyfill
-* React and Prettier ESLint plugins
+There are a set of buttons to perform certain action on the address as well:
 
-And finally some testing and security:
-* Circle CI, automated builds/testing (coming soon)
-* Coveralls, code coverage (coming soon)
-* Deepscan and Better Code Hub, code analysis (coming soon)
-* Renovate and Gemnasium, dependency monitoring (coming soon)
+* Flag/unflag/Check Flag address
+* Favorite/unfavorite/Check Favorite address
+* Add comments
 
-## Setup
-```bash
-$ git clone https://github.com/nos/dapp-starter-kit.git my-dapp
-$ cd my-dapp
-$ yarn
-$ yarn start
-```
+After every invoke action, there is a delay to confirm the block. So, wait for another
+block to check whether your action has been performed.
+For example - if you flag an address, wait for another block to check if the address
+has been flagged.
 
-Change `README.md` and `package.json` to fit your project needs. Delete `LICENSE` if not applicable.
+Check whether the address has been flagged and decide whether you want to send the
+asset to it or not. "Address is secure" text is an assurance that no one has flagged that address
+and it is secure to send asset to that address.
 
-## Testing
-Use `yarn test:local` or `npm run test:local` to run all tests locally. The `test` command is reserved for CI builds.
+Once you decide to send asset(GAS for now), input the amount and press the submit button.
+You will get an alert with confirmation
 
-## Document structure
-```
-react-stack-boilerplate
-├── src
-│   ├── __helpers__
-│   ├── __mocks__
-│   ├── assets
-│   ├── components
-│   │   └── __tests__
-│   │       └── __snapshots__
-│   ├── nos
-│   └── views
-│       └── __tests__
-│           └── __snapshots__
-├── .babelrc
-├── .eslintrc
-├── .gitignore
-├── CHANGELOG.md
-├── jest.config.js
-├── jest.setup.js
-├── package.json
-├── README.md
-└── yarn.lock
-```
+Todo:
+* Check whether the input is a valid address
+* Implement more assets
+* Show comments from all
 
-## Known issues
- * Build assets to dedicated subdirectory https://github.com/parcel-bundler/parcel/issues/233
+Feedbacks are welcome.
