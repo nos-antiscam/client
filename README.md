@@ -62,3 +62,5 @@ You will get an alert with confirmation
 * Implement dropdown to select an address from favorites to send asset
 
 Feedbacks are welcome.
+
+<strong>This project is licensed under the terms of the MIT license.</strong>
