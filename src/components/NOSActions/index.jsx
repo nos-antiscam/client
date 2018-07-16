@@ -426,6 +426,7 @@ class NOSActions extends React.Component {
             <input type="submit" value="Submit" />
           </form>
         </div>
+        {/*
         <div>
            <h3>Comments</h3>
            <ul>
@@ -439,6 +440,7 @@ class NOSActions extends React.Component {
                 }
             </ul>
         </div>
+        */}
         </div>
       </React.Fragment>
     );
