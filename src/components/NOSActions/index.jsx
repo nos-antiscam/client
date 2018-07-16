@@ -251,11 +251,17 @@ class NOSActions extends React.Component {
     //
     //console.log(size)
     res.then((result) => {
-        const des_res = deserialize_array(result.stack[0].value)
-        console.log(JSON.stringify(des_res))
-        const size = des_res[1]
-        const comments = des_res.slice(2, 2+size)
-        this.setState({comments: comments})
+        const comments_list_be = deserialize_array(result.stack[0].value)
+        console.log(JSON.stringify(comments_list_be))
+        var comments_list_fe = []
+        for (var i = 0; i < comments_list_be.length;i++){
+          var comments_list = comments_list_be[i]
+          const address = comments_list[0]
+          const size = comments_list[1]
+          const comments = comments_list.slice(2, 2+size)
+          comments_list_fe.push({address:address, comments:comments})
+        }
+        this.setState({comments: comments_list_fe})
     })
     .catch((err) => alert(`Error getting comments: ${err.message}`));
 
@@ -423,9 +429,14 @@ class NOSActions extends React.Component {
         <div>
            <h3>Comments</h3>
            <ul>
-                {this.state.comments.map(function(name, index){
-                    return <li key={ index }>{name}</li>;
-                  })}
+                {
+                  this.state.comments.map(function(comments_a, index){
+                      comments_a.comments.map(function(comment,index){
+                        return <li key={ index }>{comment}</li>;
+                      })
+                    return <ul>{comments_a.address}</ul>
+                  })
+                }
             </ul>
         </div>
         </div>

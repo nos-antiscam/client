@@ -57,6 +57,10 @@ def Main(operation, args):
         address = args[1]
         comment_target_key = concat(address, ".comment.target")
         return get_address_comments(comment_target_key, owner_hash)
+    elif operation == 'get_all_comments':
+        address = args[1]
+        comment_target_key = concat(address, ".comment.target")
+        return get_address_comments(comment_target_key, '')
     else:
         Notify('unknown operation')
         return False
@@ -159,10 +163,18 @@ def add_comment(target, address, comment):
         item_list = list(length=0)
     else:
         item_list = deserialize_bytearray(list_bytes)
+    Notify('item list:')
+    Notify(item_list)
     find_address_res = find_address_comments(item_list, address)
     if find_address_res[0]:
         index = find_address_res[1]
         comments_list = find_address_res[2]
+        Notify('index:')
+        Notify(index)
+        Notify('comments_list')
+        Notify(item_list)
+        Notify('new item list:')
+        Notify(item_list)
         comments_list[1] = comments_list[1] + 1
         comments_list.append(comment)
         item_list[index] = serialize_array(comments_list)
@@ -172,8 +184,10 @@ def add_comment(target, address, comment):
         comments_list[1] = 1
         comments_list.append(comment)
         item_list.append(serialize_array(comments_list))
+    Notify('new item list2:')
+    Notify(item_list)
     list_length = len(item_list)
-    Notify('new list length:')
+    Notify('new list length2:')
     Notify(list_length)
     list_bytes = serialize_array(item_list)
     Put(context, target, list_bytes)
@@ -192,39 +206,26 @@ def get_address_comments(target, address):
 
 
 def find_address_comments(item_list, address):
+    if len(item_list) == 0:
+        return [False, -1, list(length=0)]
     i = 0
+    comments_list_list = list(length=0)
+    # Notify("item_list=")
+    # Notify(item_list)
     for item in item_list:
         comment_list = deserialize_bytearray(item)
         comment_address = comment_list[0]
-        if address == comment_address:
+        if address and address == comment_address:
             return [True, i, comment_list]
+        if not address:
+            comments_list_list.append(comment_list)
         i+=1
-    return [False, -1, list(length=0)]
-
-
-
-
-# def do_append_10():
-#     """
-#     Add 10 items into the list in storage.
-#     :return: indication success execution of the command
-#     :rtype: bool
-#     """
-#     context = GetContext()
-#     list_bytes = Get(context, KEY)
-#     item_list = deserialize_bytearray(list_bytes)
-#     addition_list = [
-#         '1 of 10', '1 of 10', '1 of 10', '1 of 10', '1 of 10', '1 of 10', '1 of 10', '1 of 10', '1 of 10', '1 of 10'
-#     ]
-#     for item in addition_list:
-#         item_list.append(item)
-#     list_length = len(item_list)
-#     Log('new list length:')
-#     Log(list_length)
-#     list_bytes = serialize_array(item_list)
-#     Put(context, KEY, list_bytes)
-#     return True
-
+    Notify("comments_list_list=")
+    Notify(comments_list_list)
+    if len(comments_list_list) == 0:
+        return [False, -1, list(length=0)]
+    if not address:
+        return [True, i, comments_list_list]
 
 def deserialize_bytearray(data):
 
