@@ -28,11 +28,11 @@ const styles = {
 
 const App = ({ classes }) => (
   <div className={classes.App}>
-    <Header title="A nOS dApp starter-kit!" />
+    <Header title="NOS Antiscam App!" />
+    <h3>Enable community-driven security by flagging addresses</h3>
     <p className={classes.intro}>
-      To get started, edit <code>src/views/App/index.js</code> and save to reload.
+      To get started, enter NEO address(and focus out of textbox) to check if it is secure.
     </p>
-    <p className={classes.intro}>Or test out the following demo functions!</p>
     <hr className={classes.lineBreak} />
     <NOSActions />
   </div>

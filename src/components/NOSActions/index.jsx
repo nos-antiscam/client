@@ -16,6 +16,12 @@ const styles = {
   },
   green: {
     color: "green"
+  },
+  blue: {
+    color: "blue"
+  },
+  black: {
+    color: "black"
   }
 };
  function convertUnicode(input) {
@@ -70,7 +76,7 @@ class NOSActions extends React.Component {
     this.state = {address: '', value: '', comments:[]}
     this.neo = "c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b";
     this.gas = "602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7";
-    this.scriptHash = "60b6a06da01ee8ffd7b8b874fc55e29cd930f26e";
+    this.scriptHash = "9244bef72e8334bcced442a0006066e17ac100ac";
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleSend = this.handleSend.bind(this);
@@ -239,7 +245,7 @@ class NOSActions extends React.Component {
 
   get_comments(){
     const { classes, nos } = this.props;
-    const operation = "get_comments";
+    const operation = "get_all_comments";
     const check_fav = `*${this.state.address}`
     const owner = "*" + this.state.owner
     const invoke = { operation}; // and testInvoke
@@ -251,11 +257,13 @@ class NOSActions extends React.Component {
     //
     //console.log(size)
     res.then((result) => {
+        console.log(JSON.stringify(result))
         const comments_list_be = deserialize_array(result.stack[0].value)
         console.log(JSON.stringify(comments_list_be))
         var comments_list_fe = []
         for (var i = 0; i < comments_list_be.length;i++){
           var comments_list = comments_list_be[i]
+          console.log("commments_list:"+ JSON.stringify(comments_list))
           const address = comments_list[0]
           const size = comments_list[1]
           const comments = comments_list.slice(2, 2+size)
@@ -335,7 +343,54 @@ class NOSActions extends React.Component {
           {this.state.gas}</span></h3>
         </div>
         <div>
-        <strong>
+        <strong className={this.state.is_flagged ? classes.red: classes.green}>
+          {(() => {
+            switch (this.state.is_flagged) {
+              case true:   return "[Warning] Address is flagged by you";
+              default:      return "Address not flagged by you";
+            }
+          })()}
+        </strong>
+        </div>
+
+        <div>
+        <h4 className={this.state.flag_count > 0 ? classes.red: classes.green}>
+          {(() => {
+            switch (this.state.flag_count > 0) {
+              case true:   return `[Warning] Address is flagged ${this.state.flag_count} times`;
+              default:      return "Address is secure";
+            }
+          })()}
+        </h4>
+        </div>
+        <div>
+          <button className={classes.button} onClick={() => {
+                   this.check_flag()
+                }
+              }>
+          Check Flagged
+        </button>
+          <button disabled={!this.state.is_flagged}
+            className={classes.button}
+            onClick={() => {
+              this.remove_flag()
+            }
+          }
+          >
+            Remove Flag
+          </button>
+        <button disabled={this.state.is_flagged}
+            className={classes.button}
+            onClick={() => {
+              this.add_flag()
+            }
+          }
+          >
+            Flag this Address
+          </button>
+        </div>
+        <div>
+        <strong className={this.state.is_favorite ? classes.blue: classes.black}>
           {(() => {
             switch (this.state.is_favorite) {
               case true:   return "Address is favorite";
@@ -371,53 +426,6 @@ class NOSActions extends React.Component {
           </button>
         </div>
         <div>
-        <strong>
-          {(() => {
-            switch (this.state.is_flagged) {
-              case true:   return "Address is flagged by you";
-              default:      return "Address not flagged by you";
-            }
-          })()}
-        </strong>
-        </div>
-
-        <div>
-        <h4 className={this.state.flag_count > 0 ? classes.red: classes.green}>
-          {(() => {
-            switch (this.state.flag_count > 0) {
-              case true:   return `Address is flagged ${this.state.flag_count} times`;
-              default:      return "Address is secure";
-            }
-          })()}
-        </h4>
-        </div>
-        <div>
-          <button className={classes.button} onClick={() => {
-                   this.check_flag()
-                }
-              }>
-          Check Flagged
-        </button>
-          <button disabled={!this.state.is_flagged}
-            className={classes.button}
-            onClick={() => {
-              this.remove_flag()
-            }
-          }
-          >
-            Remove Flag
-          </button>
-        <button disabled={this.state.is_flagged}
-            className={classes.button}
-            onClick={() => {
-              this.add_flag()
-            }
-          }
-          >
-            Flag this Address
-          </button>
-        </div>
-        <div>
           <form onSubmit={this.handleSubmit}>
             <label>
               Add Comment:
@@ -426,21 +434,24 @@ class NOSActions extends React.Component {
             <input type="submit" value="Submit" />
           </form>
         </div>
-        {/*
         <div>
            <h3>Comments</h3>
            <ul>
                 {
                   this.state.comments.map(function(comments_a, index){
-                      comments_a.comments.map(function(comment,index){
-                        return <li key={ index }>{comment}</li>;
-                      })
-                    return <ul>{comments_a.address}</ul>
+                    return (
+                      <ul>
+                        {
+                          comments_a.comments.map(function(comment,index){
+                            return (<li key={ comments_a.address+index.toString() }>[{comments_a.address}]{comment}</li>)
+                          })
+                        }
+                      </ul>
+                    );
                   })
                 }
             </ul>
         </div>
-        */}
         </div>
       </React.Fragment>
     );
