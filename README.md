@@ -62,7 +62,7 @@ You will get an alert with confirmation
 * ~~Implement dropdown to select an address from favorites to send asset~~
 * Create/Get App logo
 * Concise UI - favorite text can be replaced with bookmark glyphicon(https://user-images.githubusercontent.com/23030886/42853958-310067dc-8a57-11e8-9630-9c2f3e1e79b2.png) which toggles between on/off
-* Concise UI - flag test can be replaced with flag glyphicon(https://thumb1.shutterstock.com/display_pic_with_logo/188066402/774511030/stock-vector--flag-glyph-icon-774511030.jpg) which toggles between on/off and shows the count
+* Concise UI - flag text can be replaced with flag glyphicon(https://thumb1.shutterstock.com/display_pic_with_logo/188066402/774511030/stock-vector--flag-glyph-icon-774511030.jpg) which toggles between on/off and shows the count
 * Save gas by adding a single call for getting all information
 * Add a delay between successive invokes to limit the usage of gas
 
