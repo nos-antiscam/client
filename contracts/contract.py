@@ -2,11 +2,6 @@ from boa.interop.Neo.Storage import Get, Put, Delete, GetContext
 from boa.interop.Neo.Runtime import Log, Notify, CheckWitness
 from boa.builtins import concat, list, range, take, substr
 
-# -- Global variables
-KEY = 'test_array'
-owner = b'#\xba\'\x03\xc52c\xe8\xd6\xe5"\xdc2 39\xdc\xd8\xee\xe9'
-
-
 def Main(operation, args):
     """
     :param operation: The name of the operation to perform
@@ -69,29 +64,6 @@ def Main(operation, args):
         return False
 
 
-def do_init(target):
-    """
-    Initialize the storage by setting an empty list.
-    :return: indication success execution of the command
-    :rtype: bool
-    """
-    context = GetContext()
-    init_list_bytes = serialize_array([])
-    Put(context, target, init_list_bytes)
-    return True
-
-
-def do_delete(target):
-    """
-    Delete the storage and reset back to its default state.
-    :return: indication success execution of the command
-    :rtype: bool
-    """
-    context = GetContext()
-    Delete(context, target)
-    return True
-
-
 def do_fetch(target):
     """
     Fetch current favorite list value from storage.
@@ -101,18 +73,6 @@ def do_fetch(target):
     context = GetContext()
     list_bytes = Get(context, target)
     return deserialize_bytearray(list_bytes)
-
-
-def do_count(target):
-    """
-    Fetch length of the stored list.
-    :return: the stored list value
-    :rtype: int
-    """
-    context = GetContext()
-    list_bytes = Get(context, target)
-    item_list = deserialize_bytearray(list_bytes)
-    return len(item_list)
 
 
 def add_to_target(target, address):

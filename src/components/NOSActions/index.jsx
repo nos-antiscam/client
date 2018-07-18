@@ -89,7 +89,7 @@ class NOSActions extends React.Component {
                     'c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b': 'NEO',
                     '602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7': 'GAS'
                   }
-    this.scriptHash = "c3a8f30b54dfdf87c8095e7104e1f0efe9b11006";
+    this.scriptHash = "dff7bbb3efe7f9da2fad1b56aa0bbd5b811f4fc9";
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleSend = this.handleSend.bind(this);
@@ -119,6 +119,7 @@ class NOSActions extends React.Component {
     });
   }
   async componentDidMount() {
+    console.log('scriptHash:' + this.scriptHash)
     this.set_address()
   }
 
