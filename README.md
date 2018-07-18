@@ -34,14 +34,14 @@ Now that your script is built, run the dapp
 The purpose of this dapp is to alert the user before he sends an asset to a flagged address
 
 ## Dapp-UI Description
-There is a form to start with - input address(or select from dropdown of favorites) to send asset(~~for now GAS is implemented~~asset can be selected from dropdown)
+There is a form to start with - input address(or select from dropdown of favorites) to send asset(~~for now GAS is implemented~~ asset can be selected from dropdown)
 Once the address is input and the focus is moved out of the address box,
 following data is displayed related to the address:
 
 * Whether the address is favorited by you(the owner address)
 * Whether the address is flagged by you(the owner address)
 * Number of times the address is flagged(overall)
-* Comments added ~~by you(if any) - this will change to comments~~ by anyone
+* Comments added ~~by you(if any)~~ by anyone
 
 There are a set of buttons to perform certain action on the address as well:
 
@@ -58,7 +58,7 @@ Check whether the address has been flagged and decide whether you want to send t
 asset to it or not. "Address is secure" text is an assurance that no one has flagged that address
 and it is secure to send asset to that address.
 
-Once you decide to send asset(GAS for now), input the amount and press the submit button.
+Once you decide to send asset(~~GAS for now~~ selected from dropdown), input the amount and press the submit button.
 You will get an alert with confirmation
 
 ## Todo
