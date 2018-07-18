@@ -26,14 +26,14 @@ Now that your script is built, run the dapp
 The purpose of this dapp is to alert the user before he sends an asset to a flagged address
 
 ## Dapp-UI Description
-There is a form to start with - input address to send asset(for now GAS is implemented)
+There is a form to start with - input address(or select from dropdown of favorites) to send asset(~~for now GAS is implemented~~asset can be selected from dropdown)
 Once the address is input and the focus is moved out of the address box,
 following data is displayed related to the address:
 
 * Whether the address is favorited by you(the owner address)
 * Whether the address is flagged by you(the owner address)
 * Number of times the address is flagged(overall)
-* Comments added by you(if any) - this will change to comments by anyone
+* Comments added ~~by you(if any) - this will change to comments~~ by anyone
 
 There are a set of buttons to perform certain action on the address as well:
 
@@ -54,12 +54,17 @@ Once you decide to send asset(GAS for now), input the amount and press the submi
 You will get an alert with confirmation
 
 ## Todo
-* Check whether the input is a valid address
-* Implement more assets
-* Show comments from all
-* Implement Check Witness on contract
+* ~~Check whether the input is a valid address~~
+* ~~Implement more assets~~
+* ~~Show comments from all~~
+* ~~Implement Check Witness on contract~~
 * Implement route to list all addresses favorited by you
-* Implement dropdown to select an address from favorites to send asset
+* ~~Implement dropdown to select an address from favorites to send asset~~
+* Create/Get App logo
+* Concise UI - favorite text can be replaced with bookmark glyphicon(https://user-images.githubusercontent.com/23030886/42853958-310067dc-8a57-11e8-9630-9c2f3e1e79b2.png) which toggles between on/off
+* Concise UI - flag test can be replaced with flag glyphicon(https://thumb1.shutterstock.com/display_pic_with_logo/188066402/774511030/stock-vector--flag-glyph-icon-774511030.jpg) which toggles between on/off and shows the count
+* Save gas by adding a single call for getting all information
+* Add a delay between successive invokes to limit the usage of gas
 
 Feedbacks are welcome.
 
