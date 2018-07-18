@@ -4,6 +4,9 @@
   This is a dapp built on <strong>NOS platform</strong> for alerting users before they send any asset to a flagged address
 </p>
 
+
+**The testnet build is deployed on separate repository** - [here](https://github.com/shashank-ezdiagno/nos-antiscam-prod)
+
 ## Prerequisites
 * Copy contract from `./contracts/contract.py` to `<nos-local>/contracts` folder
 * Run nos-local shell
@@ -16,10 +19,15 @@ import contract /smart-contracts/contract.avm 0710 05 True False
 * Retrieve the script hash - check the hash should be the same as in `./src/components/NOSActions/index.jsx`
 
 ## Getting started
+### Access Local Build
 Now that your script is built, run the dapp
 * Run nos-client
 * Build the dapp - `yarn start`
 * Navigate to localhost:1234 to run the dapp
+
+### Access TestNet Build(No smart contract deployment needed)
+* In NOS Client _settings_, change the **Selected Network** to **nOSNet**
+* Navigate to _nos://antiscam.neo_
 
 
 ## Purpose
