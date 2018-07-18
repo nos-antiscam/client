@@ -1,5 +1,5 @@
 from boa.interop.Neo.Storage import Get, Put, Delete, GetContext
-from boa.interop.Neo.Runtime import Log, Notify
+from boa.interop.Neo.Runtime import Log, Notify, CheckWitness
 from boa.builtins import concat, list, range, take, substr
 
 # -- Global variables
@@ -16,51 +16,54 @@ def Main(operation, args):
     :return: The result of the operation
     :rtype: bytearray
     """
+    if operation == 'get_all_comments':
+        address = args[0]
+        comment_target_key = concat(address, ".comment.target")
+        return get_address_comments(comment_target_key, '')
     owner_hash = args[0]
-    fav_target_key = concat(owner_hash, ".fav.target")
-    if operation == 'init':
-        return do_init(fav_target_key)
-    elif operation == 'delete':
-        return do_delete(fav_target_key)
-    elif operation == 'fetch':
+    owner_address = args[1]
+    fav_target_key = concat(owner_address, ".fav.target")
+    if operation == 'check' or operation == 'check_flag' or 'fetch':
+        authorized = True
+    else:
+        authorized = CheckWitness(owner_hash)
+    if not authorized:
+        Log("Not Authorized")
+        return False
+    Log("Authorized")
+    if operation == 'fetch':
         return do_fetch(fav_target_key)
-    elif operation == 'count':
-        return do_count(fav_target_key)
     elif operation == 'add':
-        address = args[1]
+        address = args[2]
         return add_to_target(fav_target_key, address)
     elif operation == 'check':
-        address = args[1]
+        address = args[2]
         result = check_in_target(fav_target_key, address)
         return result[1]
     elif operation == 'remove':
-        address = args[1]
+        address = args[2]
         return delete_from_target(fav_target_key, address)
     elif operation == 'flag':
-        address = args[1]
+        address = args[2]
         flag_target_key = concat(address, ".flag.target")
-        return add_to_target(flag_target_key, owner_hash)
+        return add_to_target(flag_target_key, owner_address)
     elif operation == 'unflag':
-        address = args[1]
+        address = args[2]
         flag_target_key = concat(address, ".flag.target")
-        return delete_from_target(flag_target_key, owner_hash)
+        return delete_from_target(flag_target_key, owner_address)
     elif operation == 'check_flag':
-        address = args[1]
+        address = args[2]
         flag_target_key = concat(address, ".flag.target")
-        return check_in_target(flag_target_key, owner_hash)
+        return check_in_target(flag_target_key, owner_address)
     elif operation == 'add_comment':
-        address = args[1]
-        comment = args[2]
+        address = args[2]
+        comment = args[3]
         comment_target_key = concat(address, ".comment.target")
-        return add_comment(comment_target_key, owner_hash, comment)
+        return add_comment(comment_target_key, owner_address, comment)
     elif operation == 'get_comments':
-        address = args[1]
+        address = args[2]
         comment_target_key = concat(address, ".comment.target")
-        return get_address_comments(comment_target_key, owner_hash)
-    elif operation == 'get_all_comments':
-        address = args[1]
-        comment_target_key = concat(address, ".comment.target")
-        return get_address_comments(comment_target_key, '')
+        return get_address_comments(comment_target_key, owner_address)
     else:
         Notify('unknown operation')
         return False

@@ -2,6 +2,7 @@ import React from "react";
 import injectSheet from "react-jss";
 import PropTypes from "prop-types";
 import { react } from "@nosplatform/api-functions";
+import Neon from '@cityofzion/neon-js'
 import utils from "../../utils"
 
 const { injectNOS, nosProps } = react.default;
@@ -9,7 +10,7 @@ const { injectNOS, nosProps } = react.default;
 const styles = {
   button: {
     margin: "16px",
-    fontSize: "14px"
+    fontSize: "16px"
   },
   red: {
     color: "red"
@@ -22,6 +23,9 @@ const styles = {
   },
   black: {
     color: "black"
+  },
+  textbox: {
+    paddingRight: "2px"
   }
 };
  function convertUnicode(input) {
@@ -73,14 +77,24 @@ class NOSActions extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = {address: '', value: '', comments:[]}
-    this.neo = "c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b";
-    this.gas = "602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7";
-    this.scriptHash = "9244bef72e8334bcced442a0006066e17ac100ac";
+    this.state = {address: '', value: '',
+                  comments:[
+                          {'address':'a',comments:['comment1']},
+                          {'address':'b',comments:['comment1']}
+                  ],
+                  asset: 'c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b',
+                  favorites: []
+                }
+    this.assets = {
+                    'c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b': 'NEO',
+                    '602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7': 'GAS'
+                  }
+    this.scriptHash = "c3a8f30b54dfdf87c8095e7104e1f0efe9b11006";
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleSend = this.handleSend.bind(this);
     this.handleSendAddress = this.handleSendAddress.bind(this)
+    this.handleChangeAsset = this.handleChangeAsset.bind(this)
   }
   handleAlert = async func => { var value = await func;
           //console.log(convertUnicode(JSON.stringify(value.substring(4))));
@@ -114,28 +128,10 @@ class NOSActions extends React.Component {
     const addr = await res
     console.log(addr)
     await this.setStateAsync({owner: addr})
+    this.get_favorites()
     //this.check_bookmark()
     //this.check_flag()
 
-  }
-
-  check_flag(address){
-    const { classes, nos } = this.props;
-    const operation = "check_flag";
-    const check_fav = `*${this.state.address}`
-    const owner = "*" + this.state.owner
-    const invoke = { operation}; // and testInvoke
-    invoke['scriptHash'] = this.scriptHash
-    invoke['args'] = [owner, check_fav]
-    const res = nos.testInvoke(invoke)
-    res.then((result) => {
-      const is_flagged = result.stack[0].value[1].value == '1'
-      const flag_count_str = result.stack[0].value[0].value
-      const flag_count =  flag_count_str ? parseInt(flag_count_str) : 0
-      console.log(is_flagged)
-      this.setState({is_flagged: is_flagged, flag_count: flag_count})
-    })
-    .catch((err) => alert(`Error checking favorite: ${err.message}`));
   }
 
   async set_asset(name, hash) {
@@ -148,18 +144,40 @@ class NOSActions extends React.Component {
     await this.setStateAsync(dict)
   }
 
+  get_invoke_dict(operation, args){
+    const target = `*${this.state.address}`
+    const owner_hash = this.state.owner
+    const owner = "*" + this.state.owner
+    const invoke = { operation: operation }; // and testInvoke
+    invoke['scriptHash'] = this.scriptHash
+    invoke['args'] = [owner_hash, owner, target]
+    args.map(function(arg, index){
+          invoke['args'].push(arg)
+    })
+    return invoke
+  }
+
+  check_flag(address){
+    const { classes, nos } = this.props;
+    const invoke = this.get_invoke_dict('check_flag',[])
+    const res = nos.testInvoke(invoke)
+    res.then((result) => {
+      console.log(JSON.stringify(result))
+      const is_flagged = result.stack[0].value[1].value == '1'
+      const flag_count_str = result.stack[0].value[0].value
+      const flag_count =  flag_count_str ? parseInt(flag_count_str) : 0
+      console.log(is_flagged)
+      this.setState({is_flagged: is_flagged, flag_count: flag_count})
+    })
+    .catch((err) => alert(`Error checking favorite: ${err.message}`));
+  }
+
   check_bookmark() {
     const { classes, nos } = this.props;
-    const operation = "check";
-    const check_fav = `*${this.state.address}`
-    const owner = "*" + this.state.owner
-    const invoke = { operation}; // and testInvoke
-    invoke['scriptHash'] = this.scriptHash
-    invoke['args'] = [owner, check_fav]
+    const invoke = this.get_invoke_dict('check',[])
     const res = nos.testInvoke(invoke)
-
     res.then((result) => {
-      //alert(JSON.stringify(result))
+      console.log(JSON.stringify(result))
       const is_favorite = result.stack[0].value == '1'
       console.log(is_favorite)
       this.setState({is_favorite: is_favorite})
@@ -168,12 +186,7 @@ class NOSActions extends React.Component {
   }
   remove_bookmark(){
     const { classes, nos } = this.props;
-    const operation = "remove";
-    const check_fav = `*${this.state.address}`
-    const owner = "*" + this.state.owner
-    const invoke = { operation}; // and testInvoke
-    invoke['scriptHash'] = this.scriptHash
-    invoke['args'] = [owner, check_fav]
+    const invoke = this.get_invoke_dict('remove',[])
     const res = nos.invoke(invoke)
     // alert(JSON.stringify(res))
     res.then((txid) => {
@@ -184,12 +197,7 @@ class NOSActions extends React.Component {
   }
   remove_flag(){
     const { classes, nos } = this.props;
-    const operation = "unflag";
-    const check_fav = `*${this.state.address}`
-    const owner = "*" + this.state.owner
-    const invoke = { operation}; // and testInvoke
-    invoke['scriptHash'] = this.scriptHash
-    invoke['args'] = [owner, check_fav]
+    const invoke = this.get_invoke_dict('unflag',[])
     const res = nos.invoke(invoke)
     res.then((txid) => {
       this.setState({is_flagged: false, flag_count: this.state.flag_count - 1})
@@ -199,12 +207,7 @@ class NOSActions extends React.Component {
   }
   add_bookmark(){
     const { classes, nos } = this.props;
-    const operation = "add";
-    const check_fav = `*${this.state.address}`
-    const owner = "*" + this.state.owner
-    const invoke = { operation}; // and testInvoke
-    invoke['scriptHash'] = this.scriptHash
-    invoke['args'] = [owner, check_fav]
+    const invoke = this.get_invoke_dict('add',[])
     const res = nos.invoke(invoke)
     res.then((txid) => {
       this.setState({is_favorite: true})
@@ -215,12 +218,7 @@ class NOSActions extends React.Component {
 
   add_flag(){
     const { classes, nos } = this.props;
-    const operation = "flag";
-    const check_fav = `*${this.state.address}`
-    const owner = "*" + this.state.owner
-    const invoke = { operation}; // and testInvoke
-    invoke['scriptHash'] = this.scriptHash
-    invoke['args'] = [owner, check_fav]
+    const invoke = this.get_invoke_dict('flag',[])
     const res = nos.invoke(invoke)
     res.then((txid) => {
       this.setState({is_flagged: true, flag_count: this.state.flag_count + 1})
@@ -231,12 +229,7 @@ class NOSActions extends React.Component {
 
   add_comment(comment){
     const { classes, nos } = this.props;
-    const operation = "add_comment";
-    const check_fav = `*${this.state.address}`
-    const owner = "*" + this.state.owner
-    const invoke = { operation}; // and testInvoke
-    invoke['scriptHash'] = this.scriptHash
-    invoke['args'] = [owner, check_fav, comment]
+    const invoke = this.get_invoke_dict('add_comment',[comment])
     const res = nos.invoke(invoke)
     // alert(JSON.stringify(res))
     res.then((txid) => alert(`comment added in transaction ${txid}`))
@@ -246,11 +239,10 @@ class NOSActions extends React.Component {
   get_comments(){
     const { classes, nos } = this.props;
     const operation = "get_all_comments";
-    const check_fav = `*${this.state.address}`
-    const owner = "*" + this.state.owner
+    const address = `*${this.state.address}`
     const invoke = { operation}; // and testInvoke
     invoke['scriptHash'] = this.scriptHash
-    invoke['args'] = [owner, check_fav]
+    invoke['args'] = [address]
     const res = nos.testInvoke(invoke)
 
     //console.log(JSON.stringify(des_res))
@@ -275,8 +267,30 @@ class NOSActions extends React.Component {
 
   }
 
+  get_favorites(){
+    const { classes, nos } = this.props;
+    const operation = "fetch";
+    const address = `*${this.state.owner}`
+    const invoke = { operation}; // and testInvoke
+    invoke['scriptHash'] = this.scriptHash
+    invoke['args'] = [this.state.owner, address]
+    const res = nos.testInvoke(invoke)
+    res.then((result) => {
+        console.log(JSON.stringify(result))
+        const favorites_list_be = deserialize_array(result.stack[0].value)
+        console.log(JSON.stringify(favorites_list_be))
+        var favorites_list_fe = []
+        for (var i = 0; i < favorites_list_be.length;i++){
+          const favorite = favorites_list_be[i]
+          const favorite_addr = favorite.substring(1)
+          console.log("favorite:"+ favorite_addr)
+          favorites_list_fe.push(favorite_addr)
+        }
+        this.setState({favorites: favorites_list_fe})
+    })
+    .catch((err) => alert(`Error getting favorites list: ${err.message}`));
 
-
+  }
 
   handleChange(evt) {
     this.setState({ [evt.target.name]: evt.target.value });
@@ -293,18 +307,38 @@ class NOSActions extends React.Component {
     event.preventDefault();
     const amount = this.state.amount.toString();
     const receiver = this.state.address;
-    nos.send({ asset: this.gas, amount, receiver })
-    .then((txid) => alert(`${amount} GAS sent in transaction ${txid}`))
+    console.log(this.state.asset)
+    if (this.state.flag_count > 0 &&
+        !confirm("The address is flagged, Are you sure you want to do this?")) return
+    nos.send({ asset: this.state.asset, amount, receiver })
+    .then((txid) => alert(`${amount} ${this.assets[this.state.asset]} sent in transaction ${txid}`))
     .catch((err) => alert(`Error: ${err.message}`));
   }
 
   handleSendAddress(event){
-    this.state.address = event.target.value
-    this.set_asset('neo', this.neo)
-    this.set_asset('gas', this.gas)
+    var address = event.target.value
+    if(!address) return
+    if(!Neon.is.address(address)){
+      alert("invalid NEO address")
+      event.target.value = this.state.address
+      return
+    }
+    if(address == this.state.owner){
+      alert("Destination NEO address cannot be same as account address")
+      event.target.value = this.state.address
+      return
+    }
+    if(this.refs.myTextInput.value != address) this.refs.myTextInput.value = address;
+    this.state.address = address
+    Object.entries(this.assets).map(([hash, asset], i) => {
+        this.set_asset(asset, hash)
+    })
     this.check_bookmark()
     this.check_flag()
     this.get_comments()
+  }
+  handleChangeAsset(event){
+    this.setState({ asset: event.target.value });
   }
 
 
@@ -313,65 +347,94 @@ class NOSActions extends React.Component {
     var shown = {
       display: this.state.address ? "block" : "none"
     };
+    const owner = this.state.owner
     return (
       <React.Fragment>
-        <div>
+        <div class="form-group">
           <form onSubmit={this.handleSend}>
-            <label>
-              Send GAS To:
-              <input type="text" name="sendto" onBlur={this.handleSendAddress} />
+            <div>
+            <label style={{paddingRight: '1em'}}>
+              Pick from favorites <button type="button" class="btn btn-primary btn-sm" onClick={() => {
+                  this.get_favorites()
+                }}>
+                Refresh
+              </button>
+              <select  value={this.state.address} onChange={this.handleSendAddress} className="form-control">
+                <option value=""> Select Address...</option>
+                {
+                   this.state.favorites.map((addr, i) => {
+                    return (<option value={ addr }>{addr}</option>)
+                  })
+                }
+              </select>
             </label>
             <label>
+              Pick your asset:
+              <select value={this.state.asset} onChange={this.handleChangeAsset} className="form-control">
+                {
+                   Object.entries(this.assets).map(([hash, asset], i) => {
+                    return (<option value={ hash }>{asset}</option>)
+                  })
+                }
+              </select>
+            </label>
+            <label style={{width: '27em',marginLeft:  '2em'}}>
+              Send {this.assets[this.state.asset]} To:
+              <input type="text" name="sendto" ref = "myTextInput" className={[classes.textbox, "form-control"].join(" ")}  onBlur={this.handleSendAddress} />
+            </label>
+            </div>
+            <div>
+            <label style={{paddingRight: '1em'}}>
               Amount:
-              <input type="text" name="amount" onChange={this.handleChange}/>
+              <input type="text" name="amount" className={[classes.textbox, "form-control"].join(" ")}  onChange={this.handleChange}/>
             </label>
-            <input type="submit" value="Submit" />
+            <input className="btn btn-success" type="submit" value="Submit" />
+            </div>
           </form>
         </div>
         <div style={shown}>
         <div>
           <h3>Address: <span>{this.state.address}</span></h3>
         </div>
+        {
+          Object.entries(this.assets).map(([hash, asset], i) => {
+            return (<div>
+                      <h4>{asset} Balance:
+                      <span>
+                      {this.state[asset]}</span></h4>
+                    </div>)
+          })
+        }
         <div>
-          <h3>NEO Balance:
-          <span>
-          {this.state.neo}</span></h3>
-        </div>
-        <div>
-          <h3>GAS Balance:
-          <span>
-          {this.state.gas}</span></h3>
-        </div>
-        <div>
-        <strong className={this.state.is_flagged ? classes.red: classes.green}>
+        <h5><strong className={this.state.is_flagged ? classes.red: classes.green}>
           {(() => {
             switch (this.state.is_flagged) {
               case true:   return "[Warning] Address is flagged by you";
               default:      return "Address not flagged by you";
             }
           })()}
-        </strong>
+        </strong></h5>
         </div>
 
         <div>
-        <h4 className={this.state.flag_count > 0 ? classes.red: classes.green}>
+        <h4><strong className={this.state.flag_count > 0 ? classes.red: classes.green}>
           {(() => {
             switch (this.state.flag_count > 0) {
               case true:   return `[Warning] Address is flagged ${this.state.flag_count} times`;
               default:      return "Address is secure";
             }
-          })()}
+          })()}</strong>
         </h4>
         </div>
         <div>
-          <button className={classes.button} onClick={() => {
+          <button className={`${classes.button} btn btn-info`} onClick={() => {
                    this.check_flag()
                 }
               }>
           Check Flagged
         </button>
           <button disabled={!this.state.is_flagged}
-            className={classes.button}
+            className={`${classes.button} btn btn-warning`}
             onClick={() => {
               this.remove_flag()
             }
@@ -380,7 +443,7 @@ class NOSActions extends React.Component {
             Remove Flag
           </button>
         <button disabled={this.state.is_flagged}
-            className={classes.button}
+            className={`${classes.button} btn btn-danger`}
             onClick={() => {
               this.add_flag()
             }
@@ -390,24 +453,24 @@ class NOSActions extends React.Component {
           </button>
         </div>
         <div>
-        <strong className={this.state.is_favorite ? classes.blue: classes.black}>
+        <h5><strong className={this.state.is_favorite ? classes.blue: classes.black}>
           {(() => {
             switch (this.state.is_favorite) {
               case true:   return "Address is favorite";
               default:      return "Address not favorite";
             }
           })()}
-        </strong>
+        </strong></h5>
         </div>
         <div>
-        <button className={classes.button} onClick={() => {
+        <button className={`${classes.button} btn btn-info`} onClick={() => {
                    this.check_bookmark()
                 }
               }>
           Check Favorite
         </button>
           <button disabled={!this.state.is_favorite}
-            className={classes.button}
+            className={`${classes.button} btn btn-warning`}
             onClick={() => {
               this.remove_bookmark()
             }
@@ -416,7 +479,7 @@ class NOSActions extends React.Component {
             Remove Favorite
           </button>
         <button disabled={this.state.is_favorite}
-            className={classes.button}
+            className={`${classes.button} btn btn-success`}
             onClick={() => {
               this.add_bookmark()
             }
@@ -425,32 +488,36 @@ class NOSActions extends React.Component {
             Add Favorite
           </button>
         </div>
-        <div>
+        <div class="form-group">
           <form onSubmit={this.handleSubmit}>
-            <label>
+            <label style={{width: '24em',paddingRight: '1em'}}>
               Add Comment:
-              <input type="text" name="comment" onChange={this.handleChange}/>
+              <input type="text" name="comment" class="form-control" onChange={this.handleChange} width="200px"/>
             </label>
-            <input type="submit" value="Submit" />
+            <input type="submit" class="btn btn-primary" value="Submit" />
           </form>
         </div>
-        <div>
-           <h3>Comments</h3>
-           <ul>
-                {
-                  this.state.comments.map(function(comments_a, index){
-                    return (
-                      <ul>
-                        {
-                          comments_a.comments.map(function(comment,index){
-                            return (<li key={ comments_a.address+index.toString() }>[{comments_a.address}]{comment}</li>)
-                          })
-                        }
-                      </ul>
-                    );
-                  })
-                }
-            </ul>
+        <div style={{textAlign: 'left',marginLeft: '35em'}}>
+            <h3>Comments
+              <button type="button" class="btn btn-default btn-sm" onClick={() => {
+                  this.get_comments()
+                }}>
+                Refresh
+              </button>
+            </h3>
+            {
+              this.state.comments.map(function(comments_a, index){
+                return (
+                  <ul><strong style={{marginLeft: '-2em'}}>{comments_a.address==('*'+ owner)? '*You': comments_a.address}</strong>
+                    {
+                      comments_a.comments.map(function(comment,index){
+                        return (<li key={ comments_a.address+index.toString() }>{comment}</li>)
+                      })
+                    }
+                  </ul>
+                );
+              })
+            }
         </div>
         </div>
       </React.Fragment>
