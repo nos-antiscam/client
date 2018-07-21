@@ -2,7 +2,7 @@ import React from "react";
 import injectSheet from "react-jss";
 import PropTypes from "prop-types";
 
-import nosLogo from "./../../assets/logo.png";
+import nosLogo from "./../../assets/antiscam.png";
 
 const styles = {
   logoContainer: {
@@ -12,7 +12,6 @@ const styles = {
     position: "relative"
   },
   nosLogo: {
-    animation: "nOS-logo-spin infinite 3s linear",
     width: "100%"
   },
   "@keyframes nOS-logo-spin": {
