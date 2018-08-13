@@ -6,19 +6,19 @@ import SpinningLogo from "./../SpinningLogo";
 
 const styles = {
   header: {
-    backgroundColor: "#f0f0f0",
     color: "#333333",
-    padding: "24px",
-    marginBottom: "32px"
+    padding: "8px",
+    marginBottom: "16px"
   },
   title: {
-    fontSize: "1.5em"
+    fontSize: "1.5em",
+    textAlign: "center"
   }
 };
 
 const Header = ({ classes, title }) => (
   <header className={classes.header}>
-    <h1 className={classes.title}>{title}</h1>
+    <h1 className={classes.title}><strong>{title}</strong></h1>
     <SpinningLogo/>
   </header>
 );

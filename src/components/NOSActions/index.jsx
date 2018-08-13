@@ -26,6 +26,22 @@ const styles = {
   },
   textbox: {
     paddingRight: "2px"
+  },
+  margintop7px: {
+    marginTop: "7px"
+  },
+  margintop13px: {
+    marginTop: "13px"
+  },
+  lineBreak: {
+    width: "75%",
+    borderTop: "1px solid #333333",
+  },
+  font20px: {
+    fontSize: "20px"
+  },
+  mrgnbtm12px: {
+    marginBottom: "12px"
   }
 };
  function convertUnicode(input) {
@@ -346,21 +362,22 @@ class NOSActions extends React.Component {
   render() {
     const { classes, nos } = this.props;
     var shown = {
-      display: this.state.address ? "block" : "none"
+      display: this.state.address ? "block" : "none",
+      margin: "20px"
     };
     const owner = this.state.owner
     return (
       <React.Fragment>
-        <div class="form-group">
+        <div class="form-group" >
           <form onSubmit={this.handleSend}>
-            <div>
-            <label style={{paddingRight: '1em'}}>
+            <div class="row">
+            <label class="col-md-3">
               Pick from favorites <button type="button" class="btn btn-primary btn-sm" onClick={() => {
                   this.get_favorites()
                 }}>
                 Refresh
               </button>
-              <select  value={this.state.address} onChange={this.handleSendAddress} className="form-control">
+              <select  value={this.state.address} onChange={this.handleSendAddress} className={[classes.margintop7px, "form-control"].join(" ")}>
                 <option value=""> Select Address...</option>
                 {
                    this.state.favorites.map((addr, i) => {
@@ -369,9 +386,9 @@ class NOSActions extends React.Component {
                 }
               </select>
             </label>
-            <label>
+            <label class="col-md-2">
               Pick your asset:
-              <select value={this.state.asset} onChange={this.handleChangeAsset} className="form-control">
+              <select value={this.state.asset} onChange={this.handleChangeAsset} className={[classes.margintop13px, "form-control"].join(" ")}>
                 {
                    Object.entries(this.assets).map(([hash, asset], i) => {
                     return (<option value={ hash }>{asset}</option>)
@@ -379,147 +396,178 @@ class NOSActions extends React.Component {
                 }
               </select>
             </label>
-            <label style={{width: '27em',marginLeft:  '2em'}}>
+            <label class="col-md-4">
               Send {this.assets[this.state.asset]} To:
-              <input type="text" name="sendto" ref = "myTextInput" className={[classes.textbox, "form-control"].join(" ")}  onBlur={this.handleSendAddress} />
+              <input type="text" name="sendto" ref = "myTextInput" className={[classes.margintop13px, classes.textbox, "form-control"].join(" ")}  onBlur={this.handleSendAddress} />
+            </label>
+            <label class="col-md-1">
+              Amount:
+              <input type="text" name="amount" className={[classes.margintop13px, classes.textbox, "form-control"].join(" ")}  onChange={this.handleChange}/>
             </label>
             </div>
-            <div>
-            <label style={{paddingRight: '1em'}}>
-              Amount:
-              <input type="text" name="amount" className={[classes.textbox, "form-control"].join(" ")}  onChange={this.handleChange}/>
-            </label>
-            <input className="btn btn-success" type="submit" value="Submit" />
+            <div class="row">
+              <input style={{marginTop: '7px'}} className="col-md-1 offset-md-5 btn btn-success" type="submit" value="Submit" />
             </div>
           </form>
         </div>
         <div style={shown}>
-        <div>
-          <h3>Address: <span>{this.state.address}</span></h3>
-        </div>
-        {
-          Object.entries(this.assets).map(([hash, asset], i) => {
-            return (<div>
-                      <h4>{asset} Balance:
-                      <span>
-                      {this.state[asset]}</span></h4>
-                    </div>)
-          })
-        }
-        <div>
-        <h5><strong className={this.state.is_flagged ? classes.red: classes.green}>
-          {(() => {
-            switch (this.state.is_flagged) {
-              case true:   return "[Warning] Address is flagged by you";
-              default:      return "Address not flagged by you";
-            }
-          })()}
-        </strong></h5>
-        </div>
-
-        <div>
-        <h4><strong className={this.state.flag_count > 0 ? classes.red: classes.green}>
-          {(() => {
-            switch (this.state.flag_count > 0) {
-              case true:   return `[Warning] Address is flagged ${this.state.flag_count} times`;
-              default:      return "Address is secure";
-            }
-          })()}</strong>
-        </h4>
-        </div>
-        <div>
-          <button className={`${classes.button} btn btn-info`} onClick={() => {
-                   this.check_flag()
-                }
-              }>
-          Check Flagged
-        </button>
-          <button disabled={!this.state.is_flagged}
-            className={`${classes.button} btn btn-warning`}
-            onClick={() => {
-              this.remove_flag()
-            }
-          }
-          >
-            Remove Flag
-          </button>
-        <button disabled={this.state.is_flagged}
-            className={`${classes.button} btn btn-danger`}
-            onClick={() => {
-              this.add_flag()
-            }
-          }
-          >
-            Flag this Address
-          </button>
-        </div>
-        <div>
-        <h5><strong className={this.state.is_favorite ? classes.blue: classes.black}>
-          {(() => {
-            switch (this.state.is_favorite) {
-              case true:   return "Address is favorite";
-              default:      return "Address not favorite";
-            }
-          })()}
-        </strong></h5>
-        </div>
-        <div>
-        <button className={`${classes.button} btn btn-info`} onClick={() => {
-                   this.check_bookmark()
-                }
-              }>
-          Check Favorite
-        </button>
-          <button disabled={!this.state.is_favorite}
-            className={`${classes.button} btn btn-warning`}
-            onClick={() => {
-              this.remove_bookmark()
-            }
-          }
-          >
-            Remove Favorite
-          </button>
-        <button disabled={this.state.is_favorite}
-            className={`${classes.button} btn btn-success`}
-            onClick={() => {
-              this.add_bookmark()
-            }
-          }
-          >
-            Add Favorite
-          </button>
-        </div>
-        <div class="form-group">
-          <form onSubmit={this.handleSubmit}>
-            <label style={{width: '24em',paddingRight: '1em'}}>
-              Add Comment:
-              <input type="text" name="comment" class="form-control" onChange={this.handleChange} width="200px"/>
-            </label>
-            <input type="submit" class="btn btn-primary" value="Submit" />
-          </form>
-        </div>
-        <div style={{textAlign: 'left',marginLeft: '35em'}}>
-            <h3>Comments
-              <button type="button" class="btn btn-default btn-sm" onClick={() => {
-                  this.get_comments()
-                }}>
-                Refresh
-              </button>
-            </h3>
-            {
-              this.state.comments.map(function(comments_a, index){
-                return (
-                  <ul><strong style={{marginLeft: '-2em'}}>{comments_a.address==('*'+ owner)? '*You': comments_a.address}</strong>
-                    {
-                      comments_a.comments.map(function(comment,index){
-                        return (<li key={ comments_a.address+index.toString() }>{comment}</li>)
-                      })
+          <h5><strong>Address</strong>: <span>{this.state.address}</span></h5>
+          <div className={classes.mrgnbtm12px}>
+            <h5><strong>Balances</strong></h5>
+            <hr  align="left" className={classes.lineBreak} />
+            <div class="row" style={{marginLeft: "2px"}}>
+              {
+                Object.entries(this.assets).map(([hash, asset], i) => {
+                  return (<div class="col-md-3">
+                            <strong>{asset}</strong> :
+                            <span>
+                            {this.state[asset]}</span>
+                          </div>)
+                })
+              }
+            </div>
+          </div>
+          <div className={classes.mrgnbtm12px}>
+            <h5><strong>Flag Status</strong></h5>
+            <hr align="left" className={classes.lineBreak} />
+            <div class="row" style={{marginLeft: "2px"}}>
+              <div class="col-md-12">
+                <span className={classes.font20px}><strong className={this.state.is_flagged ? classes.red: classes.green}>
+                  {(() => {
+                    switch (this.state.is_flagged) {
+                      case true:   return "[Warning] Address is flagged by you";
+                      default:      return "Address not flagged by you";
                     }
-                  </ul>
-                );
-              })
-            }
-        </div>
+                  })()}
+                </strong></span>
+              </div>
+              <div class="col-md-12">
+                <span className={classes.font20px}><strong className={this.state.flag_count > 0 ? classes.red: classes.green}>
+                  {(() => {
+                    switch (this.state.flag_count > 0) {
+                      case true:   return `[Warning] Address is flagged ${this.state.flag_count} times`;
+                      default:      return "Address is secure";
+                    }
+                  })()}</strong>
+                </span>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-2">
+                <button className={`${classes.button} btn btn-info btn-sm`} onClick={() => {
+                         this.check_flag()
+                      }
+                    }>
+                  Check Flagged
+                </button>
+              </div>
+              <div class="col-md-2">
+                <button disabled={!this.state.is_flagged}
+                  className={`${classes.button} btn btn-warning btn-sm`}
+                  onClick={() => {
+                    this.remove_flag()
+                  }
+                }>
+                  Remove Flag
+                </button>
+              </div>
+              <div class="col-md-2">
+                <button disabled={this.state.is_flagged}
+                    className={`${classes.button} btn btn-danger btn-sm`}
+                    onClick={() => {
+                      this.add_flag()
+                    }
+                  }
+                  >
+                  Flag this Address
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className={classes.mrgnbtm12px}>
+            <h5><strong>Bookmark Status</strong></h5>
+            <hr align="left" className={classes.lineBreak} />
+            <div class="row" style={{marginLeft: "2px"}}>
+              <div class="col-md-12">
+              <span className={classes.font20px}><strong className={this.state.is_favorite ? classes.blue: classes.black}>
+                {(() => {
+                  switch (this.state.is_favorite) {
+                    case true:   return "Address is favorite";
+                    default:      return "Address not favorite";
+                  }
+                })()}
+              </strong></span>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-2">
+                <button className={`${classes.button} btn btn-info  btn-sm`} onClick={() => {
+                           this.check_bookmark()
+                        }
+                      }>
+                  Check Favorite
+                </button>
+              </div>
+              <div class="col-md-2">
+                <button disabled={!this.state.is_favorite}
+                  className={`${classes.button} btn btn-warning  btn-sm`}
+                  onClick={() => {
+                    this.remove_bookmark()
+                  }
+                }
+                >
+                  Remove Favorite
+                </button>
+              </div>
+              <div class="col-md-2">
+                <button disabled={this.state.is_favorite}
+                    className={`${classes.button} btn btn-success  btn-sm`}
+                    onClick={() => {
+                      this.add_bookmark()
+                    }
+                  }
+                  >
+                    Add Favorite
+                  </button>
+              </div>
+            </div>
+          </div>
+          <div className={classes.mrgnbtm12px}>
+            <h5><strong style={{paddingRight: '3px'}}>Comments</strong><button type="button" class="btn btn-default btn-sm"
+                                                 onClick={() => {this.get_comments()}}>
+                    Refresh
+                  </button>
+            </h5>
+            <hr align="left" className={classes.lineBreak} />
+            <div class="row" style={{marginLeft: "2px"}}>
+              <div class="form-group col-md-12">
+                <form onSubmit={this.handleSubmit}>
+                  <label style={{width: '24em',paddingRight: '1em', fontWeight: "bold"}}>
+                    Add Comment:
+                    <input type="text" name="comment" class="form-control" onChange={this.handleChange} width="200px"/>
+                  </label>
+                  <input type="submit" class="btn btn-primary" value="Submit" />
+                </form>
+              </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                {
+                  this.state.comments.map(function(comments_a, index){
+                    return (
+                      <ul><strong style={{marginLeft: '-2em'}}>{comments_a.address==('*'+ owner)? '*You': comments_a.address}</strong>
+                        {
+                          comments_a.comments.map(function(comment,index){
+                            return (<li key={ comments_a.address+index.toString() }>{comment}</li>)
+                          })
+                        }
+                      </ul>
+                    );
+                  })
+                }
+                </div>
+            </div>
+          </div>
         </div>
       </React.Fragment>
     );

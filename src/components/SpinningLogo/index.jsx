@@ -7,8 +7,8 @@ import nosLogo from "./../../assets/antiscam.png";
 const styles = {
   logoContainer: {
     display: "block",
-    maxWidth: "200px",
-    margin: "32px auto",
+    maxWidth: "100px",
+    margin: "auto",
     position: "relative"
   },
   nosLogo: {
@@ -22,7 +22,7 @@ const styles = {
 
 const SpinningLogo = ({ classes }) => (
   <div className={classes.logoContainer}>
-    <img src={nosLogo} className={classes.nosLogo} alt="nOS logo" key="nosLogo" />
+    <img src={nosLogo} className={classes.nosLogo} alt="nOS Antiscam logo" key="nosLogo" />
   </div>
 );
 

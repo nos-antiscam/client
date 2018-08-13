@@ -9,20 +9,19 @@ const styles = {
   "@import": "https://fonts.googleapis.com/css?family=Source+Sans+Pro",
   "@global html, body": {
     fontFamily: "Source Sans Pro",
-    margin: 0,
+    margin: "1rem",
     padding: 0,
     backgroundColor: "#ffffff"
   },
-  App: {
-    textAlign: "center"
-  },
+  // App: {
+  //   textAlign: "center"
+  // },
   intro: {
     fontSize: "large"
   },
   lineBreak: {
-    width: "75%",
-    borderTop: "1px solid #333333",
-    margin: "32px auto"
+    width: "100%",
+    borderTop: "1px solid #333333"
   }
 };
 
@@ -34,6 +33,7 @@ const App = ({ classes }) => (
       To get started, enter NEO address(and focus out of textbox) to check if it is secure.
     </p>
     <hr className={classes.lineBreak} />
+    <br/>
     <NOSActions />
   </div>
 );
